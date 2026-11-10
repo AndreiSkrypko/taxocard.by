@@ -477,37 +477,100 @@ mark {
   backdrop-filter: blur(4px);
 }
 
-html.js body:not(.allow-b24-popup):not(.lead-modal-open) .b24-window-overlay {
-  pointer-events: none;
-  opacity: 0;
-}
-
-html.js body.allow-b24-popup .b24-window,
-html.js body.allow-b24-popup .b24-window-overlay,
-html.js body.lead-modal-open .lead-modal .b24-window {
-  display: block !important;
-}
-
-/* Скрываем только всплывающие окна Bitrix с body, не форму внутри нашей модалки */
-body.lead-modal-open > .b24-window,
-body.lead-modal-open > .b24-window-overlay {
-  display: none !important;
-}
-
-.lead-modal .b24-window {
-  display: block !important;
-  position: static !important;
-  inset: auto !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  max-height: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
+.b24-window-popup.b24-window-popup {
   transform: none !important;
 }
 
-/* ---------- Custom lead modal (Bitrix inline) ---------- */
+/* Fallback: inline-форма Bitrix в оверлее, если click-попап не поднялся */
+.tc-b24-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.tc-b24-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 26, 23, 0.78);
+  backdrop-filter: blur(4px);
+}
+
+.tc-b24-overlay__panel {
+  position: relative;
+  z-index: 1;
+  width: min(440px, 100%);
+  max-height: min(90vh, 720px);
+  overflow: auto;
+  border-radius: 20px;
+  background: var(--white);
+  padding: 20px 20px 12px;
+  box-shadow: 0 28px 80px rgba(13, 38, 34, 0.35);
+}
+
+.tc-b24-overlay__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--dark);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.tc-b24-overlay__close:hover {
+  background: var(--line);
+}
+
+.tc-b24-overlay__host .b24-form-header,
+.tc-b24-overlay__host .b24-form-logo {
+  display: none !important;
+}
+
+.tc-b24-overlay__host .b24-form-btn {
+  width: 100% !important;
+  border-radius: 999px !important;
+  background: var(--green) !important;
+  font-family: var(--font-head) !important;
+  font-weight: 700 !important;
+}
+
+.tc-b24-overlay__loading {
+  margin: 0;
+  padding: 28px 12px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.tc-b24-overlay__host > .b24-window {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Кастомная модалка отключена — только нативный попап Bitrix24 (как на backup) */
 .lead-modal {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* ---------- legacy lead modal styles (unused) ---------- */
+.lead-modal--unused {
   position: fixed;
   inset: 0;
   z-index: 350;
@@ -4858,7 +4921,7 @@ body.lead-modal-open #widgethelp_uniquecssid {
 
   .nav__item:has(> a[href="#features"]),
   .nav__item:has(> a[href="#testimonials"]),
-  .nav__item:has(> a[data-b24-zayavka]) {
+  .nav__item:has(> .b24) {
     display: none;
   }
 
