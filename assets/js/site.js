@@ -47,13 +47,22 @@
     setDrawer(false);
   });
 
-  var leadModalFormBooted = false;
-  var B24_INLINE_17 =
-    "(function(w,d,u){var s=d.createElement('script');s.async=true;s.src=u+'?'+(Date.now()/180000|0);var h=d.getElementsByTagName('script')[0];h.parentNode.insertBefore(s,h);})(window,document,'https://cdn-ru.bitrix24.by/b27507608/crm/form/loader_17.js');";
+  var B24_DEFAULT_FORM = { id: '17', sec: 'vqtplx' };
+
+  function b24LoaderCode(id) {
+    return "(function(w,d,u){var s=d.createElement('script');s.async=true;s.src=u+'?'+(Date.now()/180000|0);var h=d.getElementsByTagName('script')[0];h.parentNode.insertBefore(s,h);})(window,document,'https://cdn-ru.bitrix24.by/b27507608/crm/form/loader_" + id + ".js');";
+  }
+
+  function b24FormOfLink(link) {
+    var box = link && link.closest('.b24');
+    var script = box && box.querySelector('script[data-b24-form]');
+    var m = script && /^click\/(\d+)\/(\w+)$/.exec(script.getAttribute('data-b24-form') || '');
+    return m ? { id: m[1], sec: m[2] } : B24_DEFAULT_FORM;
+  }
 
   function ensureLeadModal() {
     var modal = document.getElementById('lead-modal');
-    if (modal && !modal.querySelector('.lead-modal__layout')) {
+    if (modal && !modal.querySelector('#lead-modal-forms')) {
       modal.remove();
       modal = null;
     }
@@ -81,7 +90,7 @@
       '</aside>' +
       '<div class="lead-modal__main">' +
       '<p class="lead-modal__hint">Имя и телефон — этого достаточно для первого звонка</p>' +
-      '<div class="lead-modal__host b24-form-host is-loading" id="lead-modal-b24-host"></div>' +
+      '<div class="lead-modal__forms" id="lead-modal-forms"></div>' +
       '<p class="lead-modal__legal">Оператор: ООО «Нексора Групп», УНП 693426799. ' +
       '<a href="/politika-konfidencialnosti.html">Политика конфиденциальности</a> · ' +
       '<a href="/usloviya-uslug.html">Условия услуг</a></p>' +
@@ -93,16 +102,23 @@
     return modal;
   }
 
-  function bootLeadForm() {
-    if (leadModalFormBooted) return;
-    var host = document.getElementById('lead-modal-b24-host');
-    if (!host) return;
+  function showLeadForm(form) {
+    var wrap = document.getElementById('lead-modal-forms');
+    if (!wrap) return;
+    var key = form.id + '-' + form.sec;
+    wrap.querySelectorAll('.lead-modal__host').forEach(function (el) {
+      el.hidden = el.getAttribute('data-form-key') !== key;
+    });
+    if (wrap.querySelector('[data-form-key="' + key + '"]')) return;
+    var host = document.createElement('div');
+    host.className = 'lead-modal__host b24-form-host is-loading';
+    host.setAttribute('data-form-key', key);
+    wrap.appendChild(host);
     var tag = document.createElement('script');
-    tag.setAttribute('data-b24-form', 'inline/17/vqtplx');
+    tag.setAttribute('data-b24-form', 'inline/' + form.id + '/' + form.sec);
     tag.setAttribute('data-skip-moving', 'true');
-    tag.textContent = B24_INLINE_17;
+    tag.textContent = b24LoaderCode(form.id);
     host.appendChild(tag);
-    leadModalFormBooted = true;
     if ('MutationObserver' in window) {
       var obs = new MutationObserver(function () {
         if (host.querySelector('.b24-form-wrapper, .b24-form')) {
@@ -115,9 +131,9 @@
     }
   }
 
-  function setLeadModal(open) {
+  function setLeadModal(open, form) {
     var modal = ensureLeadModal();
-    if (open) bootLeadForm();
+    if (open) showLeadForm(form || B24_DEFAULT_FORM);
     modal.classList.toggle('is-open', open);
     modal.setAttribute('aria-hidden', open ? 'false' : 'true');
     document.body.classList.toggle('lead-modal-open', open);
@@ -134,9 +150,9 @@
     });
   }
 
-  function openZayavkaModal() {
+  function openZayavkaModal(form) {
     killB24Popups();
-    setLeadModal(true);
+    setLeadModal(true, form);
   }
 
   function isCallbackB24Link(link) {
@@ -162,7 +178,7 @@
       e.preventDefault();
       e.stopPropagation();
       setDrawer(false);
-      openZayavkaModal();
+      openZayavkaModal(b24FormOfLink(b24btn));
     }
   }
 

@@ -694,6 +694,10 @@ body.lead-modal-open .b24-window {
   min-height: 210px;
 }
 
+.lead-modal__host[hidden] {
+  display: none !important;
+}
+
 .lead-modal__host.is-loading::before {
   content: "";
   position: absolute;
