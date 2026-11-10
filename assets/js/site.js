@@ -50,12 +50,21 @@
   });
 
   document.addEventListener('click', function (e) {
-    if (e.target.closest('.b24 a[href="#"]')) setDrawer(false);
+    if (e.target.closest('.b24 a[href="#"], a.b1c[href="#"], [data-b24-proxy][href="#"]')) setDrawer(false);
   });
 
   document.addEventListener('click', function (e) {
+    var proxy = e.target.closest('[data-b24-proxy]');
+    if (proxy) {
+      var main = document.getElementById('b24-trigger-' + proxy.getAttribute('data-b24-proxy'));
+      if (main) {
+        e.preventDefault();
+        main.click();
+      }
+      return;
+    }
     var a = e.target.closest('a[href="#"]');
-    if (a && !a.closest('.b24')) e.preventDefault();
+    if (a && !a.closest('.b24') && !a.classList.contains('b1c') && !a.hasAttribute('data-b24-proxy')) e.preventDefault();
   });
 
   function isLegacyPageBlock(el) {
