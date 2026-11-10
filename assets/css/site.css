@@ -477,18 +477,33 @@ mark {
   backdrop-filter: blur(4px);
 }
 
-html.js .b24-window,
-html.js .b24-window-overlay {
-  display: none !important;
+html.js body:not(.allow-b24-popup):not(.lead-modal-open) .b24-window-overlay {
+  pointer-events: none;
+  opacity: 0;
 }
 
 html.js body.allow-b24-popup .b24-window,
-html.js body.allow-b24-popup .b24-window-overlay {
+html.js body.allow-b24-popup .b24-window-overlay,
+html.js body.lead-modal-open .lead-modal .b24-window {
   display: block !important;
 }
 
-body.lead-modal-open .b24-window {
+/* Скрываем только всплывающие окна Bitrix с body, не форму внутри нашей модалки */
+body.lead-modal-open > .b24-window,
+body.lead-modal-open > .b24-window-overlay {
   display: none !important;
+}
+
+.lead-modal .b24-window {
+  display: block !important;
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  transform: none !important;
 }
 
 /* ---------- Custom lead modal (Bitrix inline) ---------- */
@@ -1253,6 +1268,7 @@ body.lead-modal-open #widgethelp_uniquecssid {
   display: flex;
   align-items: center;
   gap: 28px;
+  min-width: 0;
 }
 
 .header .container,
@@ -1272,7 +1288,8 @@ body.lead-modal-open #widgethelp_uniquecssid {
 }
 
 .nav {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .nav__list {
@@ -1361,8 +1378,9 @@ body.lead-modal-open #widgethelp_uniquecssid {
 .header__actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   margin-left: auto;
+  flex-shrink: 0;
 }
 
 .header__phone {
@@ -1478,6 +1496,10 @@ body.lead-modal-open #widgethelp_uniquecssid {
   padding: 11px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   font-weight: 600;
+}
+
+.drawer__menu > li:not(.drawer__menu-sub) > a {
+  white-space: nowrap;
 }
 
 .drawer__menu-sub a {
@@ -4813,20 +4835,61 @@ body.lead-modal-open #widgethelp_uniquecssid {
   }
 }
 
-@media (max-width: 1240px) {
+@media (max-width: 1400px) {
   .nav__item > a {
-    padding: 10px 8px;
-    font-size: 14px;
+    padding: 9px 7px;
+    font-size: 13.5px;
   }
 
   .header__inner {
-    gap: 18px;
+    gap: 14px;
   }
 
   .header__logo img {
+    max-width: 155px;
     height: 38px;
-    max-width: 165px;
+  }
+
+  .header__actions .btn--sm {
+    padding: 10px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .nav__item:has(> a[href="#features"]),
+  .nav__item:has(> a[href="#testimonials"]),
+  .nav__item:has(> a[data-b24-zayavka]) {
+    display: none;
+  }
+
+  .nav__item > a[href="#corp"] {
+    font-size: 0;
+  }
+
+  .nav__item > a[href="#corp"]::before {
+    content: "Юр. лицам";
+    font-size: 13.5px;
+  }
+}
+
+@media (max-width: 1240px) {
+  .nav__item > a {
+    padding: 8px 6px;
+    font-size: 13px;
+  }
+
+  .header__inner {
+    gap: 12px;
+  }
+
+  .header__logo img {
+    height: 36px;
+    max-width: 145px;
     width: auto;
+  }
+
+  .nav__item:has(> a[href="#docs"]) {
+    display: none;
   }
 }
 

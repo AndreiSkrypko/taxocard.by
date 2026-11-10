@@ -48,6 +48,7 @@
   });
 
   var B24_DEFAULT_FORM = { id: '17', sec: 'vqtplx' };
+  var B24_ZAYAVKA_FORM = { id: '17', sec: 'vqtplx' };
 
   function b24LoaderCode(id) {
     return "(function(w,d,u){var s=d.createElement('script');s.async=true;s.src=u+'?'+(Date.now()/180000|0);var h=d.getElementsByTagName('script')[0];h.parentNode.insertBefore(s,h);})(window,document,'https://cdn-ru.bitrix24.by/b27507608/crm/form/loader_" + id + ".js');";
@@ -102,6 +103,49 @@
     return modal;
   }
 
+  function isLeadModalNode(el) {
+    return !!(el && el.closest && el.closest('#lead-modal'));
+  }
+
+  function activeLeadFormHost() {
+    var wrap = document.getElementById('lead-modal-forms');
+    if (!wrap) return null;
+    return wrap.querySelector('.lead-modal__host:not([hidden])') || wrap.querySelector('.lead-modal__host');
+  }
+
+  function markLeadHostReady(host) {
+    if (!host) return;
+    host.classList.remove('is-loading');
+    host.classList.add('is-ready');
+    polishB24Fields(host);
+  }
+
+  function leadFormHasMarkup(host) {
+    return !!(host && host.querySelector('.b24-form-wrapper, .b24-form, .b24-window .b24-form'));
+  }
+
+  function adoptB24IntoLeadModal() {
+    var host = activeLeadFormHost();
+    var modal = document.getElementById('lead-modal');
+    if (!host || !modal || !modal.classList.contains('is-open')) return false;
+    if (leadFormHasMarkup(host)) {
+      markLeadHostReady(host);
+      return true;
+    }
+    var adopted = false;
+    document.querySelectorAll('body > .b24-window').forEach(function (win) {
+      if (win.querySelector('.b24-form-wrapper, .b24-form')) {
+        host.appendChild(win);
+        adopted = true;
+      }
+    });
+    if (adopted || leadFormHasMarkup(host)) {
+      markLeadHostReady(host);
+      return true;
+    }
+    return false;
+  }
+
   function showLeadForm(form) {
     var wrap = document.getElementById('lead-modal-forms');
     if (!wrap) return;
@@ -109,27 +153,60 @@
     wrap.querySelectorAll('.lead-modal__host').forEach(function (el) {
       el.hidden = el.getAttribute('data-form-key') !== key;
     });
-    if (wrap.querySelector('[data-form-key="' + key + '"]')) return;
-    var host = document.createElement('div');
-    host.className = 'lead-modal__host b24-form-host is-loading';
-    host.setAttribute('data-form-key', key);
-    wrap.appendChild(host);
-    var tag = document.createElement('script');
-    tag.setAttribute('data-b24-form', 'inline/' + form.id + '/' + form.sec);
-    tag.setAttribute('data-skip-moving', 'true');
-    tag.textContent = b24LoaderCode(form.id);
-    host.appendChild(tag);
-    if ('MutationObserver' in window) {
-      var obs = new MutationObserver(function () {
-        if (host.querySelector('.b24-form-wrapper, .b24-form')) {
-          host.classList.remove('is-loading');
-          host.classList.add('is-ready');
-          polishB24Fields(host);
-          obs.disconnect();
-        }
-      });
-      obs.observe(host, { childList: true, subtree: true });
+    var host = wrap.querySelector('[data-form-key="' + key + '"]');
+    if (!host) {
+      host = document.createElement('div');
+      host.className = 'lead-modal__host b24-form-host is-loading';
+      host.setAttribute('data-form-key', key);
+      wrap.appendChild(host);
+      var tag = document.createElement('script');
+      tag.setAttribute('data-b24-form', 'click/' + form.id + '/' + form.sec);
+      tag.setAttribute('data-skip-moving', 'true');
+      tag.textContent = b24LoaderCode(form.id);
+      host.appendChild(tag);
+      var trigger = document.createElement('a');
+      trigger.href = '#';
+      trigger.setAttribute('hidden', 'hidden');
+      trigger.setAttribute('aria-hidden', 'true');
+      host.appendChild(trigger);
+      window.setTimeout(function () {
+        allowB24Popup(15000);
+        if (trigger) trigger.click();
+      }, 400);
+    } else if (leadFormHasMarkup(host)) {
+      markLeadHostReady(host);
+      return;
+    } else {
+      host.classList.add('is-loading');
+      host.classList.remove('is-ready');
     }
+    var done = false;
+    function tryReady() {
+      if (done) return;
+      if (adoptB24IntoLeadModal() || leadFormHasMarkup(host)) {
+        done = true;
+        markLeadHostReady(host);
+      }
+    }
+    if ('MutationObserver' in window) {
+      var obs = new MutationObserver(tryReady);
+      obs.observe(host, { childList: true, subtree: true });
+      obs.observe(document.body, { childList: true, subtree: false });
+      setTimeout(function () { obs.disconnect(); }, 15000);
+    }
+    var tries = 0;
+    var poll = setInterval(function () {
+      tries += 1;
+      tryReady();
+      if (done || tries > 40) clearInterval(poll);
+    }, 250);
+    setTimeout(function () {
+      if (done || !host.classList.contains('is-loading')) return;
+      host.classList.remove('is-loading');
+      host.innerHTML =
+        '<p class="lead-modal__load-fail">Не удалось загрузить форму. ' +
+        '<a href="tel:+375298577788">Позвоните</a> или нажмите «Заказать звонок» в шапке.</p>';
+    }, 12000);
     polishB24Fields(host);
   }
 
@@ -164,23 +241,72 @@
   }
 
   function killB24Popups() {
+    if (document.body.classList.contains('lead-modal-open')) {
+      adoptB24IntoLeadModal();
+    }
     document.querySelectorAll('.b24-window, .b24-window-overlay, .bx-crm-form-popup').forEach(function (el) {
+      if (isLeadModalNode(el)) return;
+      if (el.classList.contains('b24-window') && document.body.classList.contains('lead-modal-open')) {
+        adoptB24IntoLeadModal();
+        if (activeLeadFormHost() && activeLeadFormHost().contains(el)) return;
+      }
       el.remove();
     });
   }
 
   function openZayavkaModal(form) {
-    killB24Popups();
     setLeadModal(true, form);
+    killB24Popups();
   }
 
-  function isCallbackB24Link(link) {
-    var box = link.closest('.b24');
-    if (!box) return false;
-    var script = box.querySelector('script[data-b24-form]');
-    if (!script) return false;
-    var type = script.getAttribute('data-b24-form') || '';
-    return type.indexOf('click/1/') !== -1;
+  function allowB24Popup(ms) {
+    document.body.classList.add('allow-b24-popup');
+    setTimeout(function () { document.body.classList.remove('allow-b24-popup'); }, ms || 5000);
+  }
+
+  function ensureZayavkaB24Sink() {
+    var sink = document.getElementById('b24-zayavka-sink');
+    if (sink) return sink;
+    sink = document.createElement('div');
+    sink.id = 'b24-zayavka-sink';
+    sink.className = 'b24';
+    sink.setAttribute('aria-hidden', 'true');
+    sink.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;';
+    var tag = document.createElement('script');
+    tag.setAttribute('data-b24-form', 'click/' + B24_ZAYAVKA_FORM.id + '/' + B24_ZAYAVKA_FORM.sec);
+    tag.setAttribute('data-skip-moving', 'true');
+    tag.textContent = b24LoaderCode(B24_ZAYAVKA_FORM.id);
+    sink.appendChild(tag);
+    var link = document.createElement('a');
+    link.href = '#';
+    link.textContent = 'Заявка';
+    sink.appendChild(link);
+    document.body.appendChild(sink);
+    return sink;
+  }
+
+  function b24FormVisible() {
+    return !!document.querySelector('.b24-window .b24-form, .b24-form-wrapper, .lead-modal.is-open .b24-form');
+  }
+
+  function openZayavkaClickForm() {
+    setDrawer(false);
+    setLeadModal(false);
+    allowB24Popup(15000);
+    var sink = ensureZayavkaB24Sink();
+    var link = sink.querySelector('a[href="#"]');
+    if (link) link.click();
+    window.setTimeout(function () {
+      if (!b24FormVisible()) setLeadModal(true, B24_ZAYAVKA_FORM);
+    }, 2000);
+  }
+
+  function armB24Click(link, form) {
+    setDrawer(false);
+    allowB24Popup(15000);
+    window.setTimeout(function () {
+      if (!b24FormVisible() && form) setLeadModal(true, form);
+    }, 2000);
   }
 
   function handleLeadClick(e) {
@@ -188,16 +314,12 @@
     if (zayavka) {
       e.preventDefault();
       e.stopPropagation();
-      setDrawer(false);
-      openZayavkaModal();
+      openZayavkaClickForm();
       return;
     }
     var b24btn = e.target.closest('.b24 a[href="#"]');
-    if (b24btn && !isCallbackB24Link(b24btn)) {
-      e.preventDefault();
-      e.stopPropagation();
-      setDrawer(false);
-      openZayavkaModal(b24FormOfLink(b24btn));
+    if (b24btn) {
+      armB24Click(b24btn, b24FormOfLink(b24btn));
     }
   }
 
@@ -211,27 +333,23 @@
   if ('MutationObserver' in window) {
     var b24PopupBlocker = new MutationObserver(function (records) {
       if (document.getElementById('lead-modal') && document.getElementById('lead-modal').classList.contains('is-open')) {
-        killB24Popups();
+        adoptB24IntoLeadModal();
+        document.querySelectorAll('body > .b24-window-overlay').forEach(function (el) {
+          if (!isLeadModalNode(el)) el.remove();
+        });
         return;
       }
+      if (document.body.classList.contains('allow-b24-popup')) return;
       records.forEach(function (record) {
         record.addedNodes.forEach(function (node) {
           if (node.nodeType !== 1) return;
-          if (node.classList && (node.classList.contains('b24-window') || node.classList.contains('b24-window-overlay'))) {
-            if (!document.body.classList.contains('allow-b24-popup')) {
-              node.remove();
-            }
+          if (node.classList && node.classList.contains('b24-window')) {
+            adoptB24IntoLeadModal();
           }
         });
       });
     });
     b24PopupBlocker.observe(document.body, { childList: true, subtree: true });
-    document.addEventListener('click', function (e) {
-      if (isCallbackB24Link(e.target.closest('a') || e.target)) {
-        document.body.classList.add('allow-b24-popup');
-        setTimeout(function () { document.body.classList.remove('allow-b24-popup'); }, 2000);
-      }
-    }, true);
   }
 
   function isLegacyPageBlock(el) {
@@ -302,4 +420,6 @@
   } else {
     revealItems.forEach(function (el) { el.classList.add('is-visible'); });
   }
+
+  ensureZayavkaB24Sink();
 })();
