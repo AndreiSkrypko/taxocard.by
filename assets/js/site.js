@@ -46,7 +46,44 @@
     });
   }
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') setDrawer(false);
+    if (e.key === 'Escape') {
+      setDrawer(false);
+      document.querySelectorAll('.nav__item--drop.is-open').forEach(function (el) {
+        el.classList.remove('is-open');
+      });
+    }
+  });
+
+  function closeNavDrops() {
+    document.querySelectorAll('.nav__item--drop.is-open').forEach(function (el) {
+      el.classList.remove('is-open');
+      var t = el.querySelector(':scope > a');
+      if (t) t.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  var navDropMq = window.matchMedia('(min-width: 1181px)');
+  document.querySelectorAll('.nav__item--drop > a').forEach(function (trigger) {
+    trigger.setAttribute('aria-haspopup', 'true');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.addEventListener('click', function (e) {
+      if (!navDropMq.matches) return;
+      var item = trigger.closest('.nav__item--drop');
+      if (!item || !item.querySelector('.nav__sub')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var willOpen = !item.classList.contains('is-open');
+      closeNavDrops();
+      if (willOpen) {
+        item.classList.add('is-open');
+        trigger.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('.nav__item--drop')) return;
+    closeNavDrops();
   });
 
   document.addEventListener('click', function (e) {

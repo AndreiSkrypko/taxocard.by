@@ -1465,6 +1465,7 @@ body.lead-modal-open #widgethelp_uniquecssid {
   position: sticky;
   top: 0;
   z-index: 100;
+  overflow: visible;
   background: rgba(13, 38, 34, 0.96);
   backdrop-filter: saturate(140%) blur(10px);
   -webkit-backdrop-filter: saturate(140%) blur(10px);
@@ -1481,6 +1482,13 @@ body.lead-modal-open #widgethelp_uniquecssid {
   align-items: center;
   gap: 28px;
   min-width: 0;
+  overflow: visible;
+}
+
+.header:has(.nav__item--drop:hover),
+.header:has(.nav__item--drop.is-open),
+.header:has(.nav__item--drop:focus-within) {
+  z-index: 250;
 }
 
 .header .container,
@@ -1502,7 +1510,7 @@ body.lead-modal-open #widgethelp_uniquecssid {
 .nav {
   flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .nav__list {
@@ -1547,8 +1555,9 @@ body.lead-modal-open #widgethelp_uniquecssid {
 
 .nav__sub {
   position: absolute;
-  top: calc(100% + 10px);
+  top: calc(100% + 4px);
   left: 0;
+  z-index: 300;
   min-width: 250px;
   padding: 10px;
   background: var(--white);
@@ -1558,6 +1567,7 @@ body.lead-modal-open #widgethelp_uniquecssid {
   visibility: hidden;
   transform: translateY(8px);
   transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  pointer-events: none;
 }
 
 .nav__sub::before {
@@ -1570,10 +1580,16 @@ body.lead-modal-open #widgethelp_uniquecssid {
 }
 
 .nav__item--drop:hover .nav__sub,
-.nav__item--drop:focus-within .nav__sub {
+.nav__item--drop:focus-within .nav__sub,
+.nav__item--drop.is-open .nav__sub {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+  pointer-events: auto;
+}
+
+.nav__item--drop.is-open > a i {
+  transform: rotate(180deg);
 }
 
 .nav__sub a {
