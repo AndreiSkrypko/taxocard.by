@@ -78,9 +78,9 @@
       '<div class="lead-modal__layout">' +
       '<aside class="lead-modal__aside">' +
       '<div class="lead-modal__icon" aria-hidden="true"><i class="fa-solid fa-phone-volume"></i></div>' +
-      '<p class="lead-modal__eyebrow">Онлайн-заявка</p>' +
+      '<p class="lead-modal__eyebrow">Заявка на консультацию</p>' +
       '<h2 id="lead-modal-title" class="lead-modal__title">Свяжемся с вами</h2>' +
-      '<p class="lead-modal__aside-text">Менеджер TaxoCARD перезвонит, уточнит детали и подскажет по документам. Без предоплаты за консультацию.</p>' +
+      '<p class="lead-modal__aside-text">Менеджер TaxoCARD перезвонит, уточнит детали и подскажет по документам. Консультация бесплатна, услуги — по договору.</p>' +
       '<ul class="lead-modal__perks">' +
       '<li><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Ответ Пн–Сб, 9:00–20:00</span></li>' +
       '<li><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Чип-карта и КОД 95</span></li>' +
