@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+Thumbs.db
+
+# legacy server-side scripts with local configs
+buyme/
+redaktor/
+cgi-bin/
+assets/mail.php

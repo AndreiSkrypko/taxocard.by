@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TaxoCARD">
+  <defs>
+    <linearGradient id="tx" x1="8" y1="32" x2="56" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f6b52"/>
+      <stop offset="0.55" stop-color="#22b07a"/>
+      <stop offset="1" stop-color="#6eebb0"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#tx)" d="M32 5.5c-.6 0-1.2.15-1.7.44L9.8 17.4a3.3 3.3 0 0 0-1.6 2.85v23.5a3.3 3.3 0 0 0 1.6 2.85l20.5 11.5c1 .56 2.2.56 3.2 0l20.5-11.5a3.3 3.3 0 0 0 1.6-2.85V20.25a3.3 3.3 0 0 0-1.6-2.85L33.7 5.94A3.3 3.3 0 0 0 32 5.5z"/>
+  <path fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M21 25.5h22M32 25.5V43M21 25.5v4.5M43 25.5v4.5"/>
+</svg>
