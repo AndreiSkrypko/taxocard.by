@@ -84,7 +84,7 @@
       '<ul class="lead-modal__perks">' +
       '<li><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Ответ Пн–Сб, 9:00–20:00</span></li>' +
       '<li><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Чип-карта и КОД 95</span></li>' +
-      '<li><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Оплата после готовности — где применимо</span></li>' +
+      '<li><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Договор и чек на услуги</span></li>' +
       '</ul>' +
       '<a class="lead-modal__call" href="tel:+375298577788"><i class="fa-solid fa-phone" aria-hidden="true"></i>+375 (29) 857-77-88</a>' +
       '</aside>' +
@@ -124,11 +124,30 @@
         if (host.querySelector('.b24-form-wrapper, .b24-form')) {
           host.classList.remove('is-loading');
           host.classList.add('is-ready');
+          polishB24Fields(host);
           obs.disconnect();
         }
       });
       obs.observe(host, { childList: true, subtree: true });
     }
+    polishB24Fields(host);
+  }
+
+  function polishB24Fields(host) {
+    if (!host) return;
+    host.querySelectorAll('.b24-form-control').forEach(function (input) {
+      if (input.dataset.tcPolished) return;
+      input.dataset.tcPolished = '1';
+      var wrap = input.closest('.b24-form-control-container') || input.parentElement;
+      function sync() {
+        if (!wrap) return;
+        wrap.classList.toggle('b24-field-filled', !!String(input.value || '').trim());
+      }
+      input.addEventListener('input', sync);
+      input.addEventListener('change', sync);
+      input.addEventListener('blur', sync);
+      sync();
+    });
   }
 
   function setLeadModal(open, form) {
@@ -215,8 +234,26 @@
     }, true);
   }
 
-  document.querySelectorAll('.page-content > div').forEach(function (block) {
+  function isLegacyPageBlock(el) {
+    var cn = typeof el.className === 'string' ? el.className : '';
+    if (el.classList.contains('socials-section')) return true;
+    if (/\btp[-a-z]|tpfeature|searvice-area|legacy-course|scroll-anchor|accordion-area\b/i.test(cn)) return true;
+    return false;
+  }
+
+  document.querySelectorAll('[data-background]').forEach(function (el) {
+    if (el.classList.contains('tpfeature-area')) return;
+    var url = el.getAttribute('data-background');
+    if (url) {
+      el.style.backgroundImage = 'url("' + url.replace(/"/g, '') + '")';
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+    }
+  });
+
+  document.querySelectorAll('.page-content > div, .page-content > section').forEach(function (block) {
     if (block.classList.contains('reveal') || block.offsetHeight < 48) return;
+    if (isLegacyPageBlock(block)) return;
     block.classList.add('reveal');
   });
 
