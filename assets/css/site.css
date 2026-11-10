@@ -1353,12 +1353,14 @@ body.lead-modal-open #widgethelp_uniquecssid {
 .nav {
   flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
 }
 
 .nav__list {
   display: flex;
   align-items: center;
   gap: 4px;
+  max-width: 100%;
 }
 
 .nav__item {
@@ -1444,6 +1446,10 @@ body.lead-modal-open #widgethelp_uniquecssid {
   gap: 12px;
   margin-left: auto;
   flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  padding-left: 8px;
+  background: linear-gradient(90deg, transparent 0, rgba(13, 38, 34, 0.96) 12px);
 }
 
 .header__phone {
@@ -4892,6 +4898,19 @@ body.lead-modal-open #widgethelp_uniquecssid {
 }
 
 /* ---------- Responsive ---------- */
+@media (max-width: 1540px) {
+  .nav__item:has(> a[href="#features"]),
+  .nav__item:has(> a[href="#testimonials"]),
+  .nav__item:has(> a[data-b24-proxy]) {
+    display: none;
+  }
+
+  .nav__item > a {
+    padding: 9px 9px;
+    font-size: 13.5px;
+  }
+}
+
 @media (max-width: 1479px) {
   .header__phone span {
     display: none;
@@ -4919,9 +4938,8 @@ body.lead-modal-open #widgethelp_uniquecssid {
     white-space: nowrap;
   }
 
-  .nav__item:has(> a[href="#features"]),
-  .nav__item:has(> a[href="#testimonials"]),
-  .nav__item:has(> .b24) {
+  .nav__item:has(> a[href="#docs"]),
+  .nav__item:has(> a[href="kontakty.html"]) {
     display: none;
   }
 
