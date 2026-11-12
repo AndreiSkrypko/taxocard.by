@@ -173,4 +173,17 @@
     revealItems.forEach(function (el) { el.classList.add('is-visible'); });
   }
 
+  /* viber:// из встроенного браузера Viber часто даёт «Запрос недоступен» — открываем звонок */
+  var ua = navigator.userAgent || '';
+  if (/Viber/i.test(ua)) {
+    document.querySelectorAll('a[href^="viber://"]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var m = (a.getAttribute('href') || '').match(/number=([^&]+)/);
+        var phone = m ? m[1].replace(/[^\d+]/g, '') : '+375298577788';
+        window.location.href = 'tel:' + phone;
+      });
+    });
+  }
+
 })();
